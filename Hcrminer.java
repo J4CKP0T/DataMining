@@ -55,6 +55,12 @@ public class Hcrminer {
                 System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
             }
 
+        //Prune EPlist
+        supPruneEPlist(minsup, initEPlist);
+        //Print check for EPlist after pruning
+        for(Node node: initEPlist){
+            System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
+        }
 
     }
 
@@ -156,6 +162,16 @@ public class Hcrminer {
             if(EPlist.get(i).item.equals(transItem)){
                 EPlist.get(i).frequency++;
                 return;
+            }
+        }
+    }
+
+    //EPlist pruning function for minsup
+    public static void supPruneEPlist(float minsup, ArrayList<Node> EPlist){
+        int i;
+        for(i=0; i<EPlist.size(); i++){
+            if(EPlist.get(i).frequency < (int)minsup){
+                EPlist.remove(i);
             }
         }
     }
