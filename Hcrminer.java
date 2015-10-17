@@ -16,7 +16,15 @@ import java.util.HashMap;
  */
 public class Hcrminer {
 
-    public static ArrayList<String> EP = new ArrayList();
+    public static class Node {
+      public String item;
+      public int frequency;
+
+      public Node(String _item, int _freq) {
+      this.item = _item;
+      this.frequency = _freq;
+      }
+    }
 
     /**
      * @param args the command line arguments
@@ -31,14 +39,22 @@ public class Hcrminer {
 
         //Create initial projected database
         HashMap<String, ArrayList<String>> initDB = createInitialDB(inputfile);
-      /*
-        //Print check for initDB
-        for(String key: initDB.keySet()){
-            String transID = key.toString();
-            ArrayList<String> transList = initDB.get(key);
-            System.out.println(transID + " " + transList);
-        }
-      */
+
+            //Print check for initDB
+            for(String key: initDB.keySet()){
+                String transID = key.toString();
+                ArrayList<String> transList = initDB.get(key);
+                System.out.println(transID + " " + transList);
+            }
+
+        //Create EPlist for initDB
+        ArrayList<Node> initEPlist = createEPlist(initDB);
+
+            //Print check for EPlist
+            for(Node node: initEPlist){
+                System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
+            }
+
 
     }
 
@@ -88,4 +104,62 @@ public class Hcrminer {
 
         return initDB;
     }
+
+
+/////// EPlist functions ////////////////////////////////////////////////////////////////////
+
+    //EP list maker function
+    public static ArrayList<Node> createEPlist(HashMap<String, ArrayList<String>> dB){
+        ArrayList<Node> newEPlist = new ArrayList<Node>();
+        int i;
+        for(String transID: dB.keySet()){
+            for(i = 0; i<dB.get(transID).size(); i++){
+                String transItem = dB.get(transID).get(i);
+                int j;
+                //if EPlist is empty
+                if(newEPlist.size()==0){
+                    Hcrminer.Node newItem = new Hcrminer.Node(transItem, 1);
+                    newEPlist.add(newItem);
+                    continue;
+                }
+                else{
+                    if(EPlistContains(transItem, newEPlist)){
+                        incrementEPNodeFreq(transItem, newEPlist);
+                        continue;
+                    }
+                    else{
+                        Hcrminer.Node newItem = new Hcrminer.Node(transItem, 1);
+                        newEPlist.add(newItem);
+                        continue;
+                    }
+                }
+            }
+        }
+        return newEPlist;
+    }
+
+    //EPlist Contains function
+    public static boolean EPlistContains(String transItem, ArrayList<Node> EPlist){
+        int i;
+        for(i=0; i<EPlist.size(); i++){
+            if(EPlist.get(i).item.equals(transItem)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //EPlist increment frequency function
+    public static void incrementEPNodeFreq(String transItem, ArrayList<Node> EPlist){
+        int i;
+        for(i=0; i<EPlist.size(); i++){
+            if(EPlist.get(i).item.equals(transItem)){
+                EPlist.get(i).frequency++;
+                return;
+            }
+        }
+    }
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
 }
