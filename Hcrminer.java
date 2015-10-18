@@ -9,20 +9,27 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Collections;
 
 /**
  *
  * @author darma010
  */
-public class Hcrminer {
+public class Hcrminer{
 
-    public static class Node {
+    public static class Node implements Comparable<Node> {
       public String item;
       public int frequency;
 
       public Node(String _item, int _freq) {
       this.item = _item;
       this.frequency = _freq;
+      }
+
+      //Custom Comparator for EPlist sorting
+      @Override
+      public int compareTo(Node node){
+          return this.frequency > node.frequency ? 1 : (this.frequency < node.frequency ? -1 : 0);
       }
     }
 
@@ -57,11 +64,18 @@ public class Hcrminer {
 
         //Prune EPlist
         supPruneEPlist(minsup, initEPlist);
+
+        /*
         //Print check for EPlist after pruning
         for(Node node: initEPlist){
             System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
         }
-
+        //sort and check sorting of EPlist
+        initEPlist = sortDecreasingFreq(initEPlist);
+        for(Node node: initEPlist){
+            System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
+        }
+        */
     }
 
     //Method that creates initial DB from input file
@@ -176,6 +190,22 @@ public class Hcrminer {
         }
     }
 
+    //Function to sort EPlist in increasing frequency
+    public static ArrayList<Node> sortIncreasingFreq(ArrayList<Node> EPlist){
+      Collections.sort(EPlist);
+      return EPlist;
+    }
+
+    //Function to sort EPlist in decreasing frequency
+    public static ArrayList<Node> sortDecreasingFreq(ArrayList<Node> EPlist){
+      ArrayList<Node> sortedEPlist = new ArrayList<Node>();
+      Collections.sort(EPlist);
+      int i;
+      for(i = EPlist.size()-1; i>=0; i--){
+        sortedEPlist.add(EPlist.get(i));
+      }
+      return sortedEPlist;
+    }
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 }
