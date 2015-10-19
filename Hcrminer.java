@@ -66,18 +66,6 @@ public class Hcrminer{
         }
 
         System.out.println(freqItemsets);
-
-        /*
-        //Print check for EPlist after pruning
-        for(Node node: initEPlist){
-            System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
-        }
-        //sort and check sorting of EPlist
-        initEPlist = sortDecreasingFreq(initEPlist);
-        for(Node node: initEPlist){
-            System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
-        }
-        */
     }
 
       //Function to recurse
