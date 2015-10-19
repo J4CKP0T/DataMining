@@ -33,11 +33,20 @@ public class Hcrminer{
       }
     }
 
+    //Globally accessible dbOfDB
+    public static HashMap<String, HashMap<String, ArrayList<String>>> dbOfDB;
+    //Globally accessible freqItemset List
+    public static ArrayList<String> freqItemsets;
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        //Initialize dbOfDB
+        dbOfDB = new HashMap<String, HashMap<String, ArrayList<String>>>();
+        //Initialize list to store Frequent Itemsets
+        freqItemsets = new ArrayList<String>();
+
         float minsup = Float.parseFloat(args[0]);
         String minconf = args[1];
         String inputfile = args[2];
@@ -46,24 +55,17 @@ public class Hcrminer{
 
         //Create initial projected database
         HashMap<String, ArrayList<String>> initDB = createInitialDB(inputfile);
-
-            //Print check for initDB
-            for(String key: initDB.keySet()){
-                String transID = key.toString();
-                ArrayList<String> transList = initDB.get(key);
-                System.out.println(transID + " " + transList);
-            }
-
         //Create EPlist for initDB
         ArrayList<Node> initEPlist = createEPlist(initDB);
+        //Prune EPlist and initDB
+        supPrune(minsup, initEPlist, initDB);
+        dbOfDB.put("nul", initDB);
 
-            //Print check for EPlist
-            for(Node node: initEPlist){
-                System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
-            }
+        for(Node node : initEPlist){
+            TP(node.item, initDB, "nul", minsup);
+        }
 
-        //Prune EPlist
-        supPruneEPlist(minsup, initEPlist);
+        System.out.println(freqItemsets);
 
         /*
         //Print check for EPlist after pruning
@@ -77,6 +79,46 @@ public class Hcrminer{
         }
         */
     }
+
+      //Function to recurse
+      public static void TP(String item, HashMap<String, ArrayList<String>> currDB, String dbName, float minsup){
+          if(currDB == dbOfDB.get("nul")){
+            dbName = "";
+          }
+          else{
+            dbName = dbName + "," + item;
+          }
+          //Build new DB and make necessary adjustments
+          HashMap<String, ArrayList<String>> newDB = new HashMap<String, ArrayList<String>>(currDB);
+          int i;
+          for(String transID : newDB.keySet()){
+              if(newDB.get(transID).contains(item)){
+                i=newDB.get(transID).indexOf(item);
+                newDB.get(transID).subList(0,i).clear();
+              }else{
+                  newDB.get(transID).clear();
+              }
+          }
+          //Make new EPlist for new DB
+          ArrayList<Node> newEP = createEPlist(newDB);
+          //Print check for newEPlist
+          for(Node node: newEP){
+              System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
+          }
+          //Prune newDB and newEP
+          supPrune(minsup, newEP, newDB);
+          //Stash newDB in Global dbOfDB
+          dbOfDB.put(dbName, newDB);
+
+          for(Node node : newEP){
+              TP(node.item, newDB, dbName, minsup);
+          }
+          if(dbName != "" && newEP.size()==0){
+            freqItemsets.add(dbName);
+          }
+          return;
+      }
+
 
     //Method that creates initial DB from input file
     public static HashMap createInitialDB(String fileName){
@@ -121,10 +163,16 @@ public class Hcrminer{
             System.out.println("Error reading file: " + fileName);
             ex.printStackTrace();
         }
-
+        /*
+        //Print check for initDB
+        for(String key: initDB.keySet()){
+            String transID = key.toString();
+            ArrayList<String> transList = initDB.get(key);
+            System.out.println(transID + " " + transList);
+        }
+        */
         return initDB;
     }
-
 
 /////// EPlist functions ////////////////////////////////////////////////////////////////////
 
@@ -136,6 +184,10 @@ public class Hcrminer{
             for(i = 0; i<dB.get(transID).size(); i++){
                 String transItem = dB.get(transID).get(i);
                 int j;
+                //if transaction is empty set continue
+                if(transItem == null){
+                  continue;
+                }
                 //if EPlist is empty
                 if(newEPlist.size()==0){
                     Hcrminer.Node newItem = new Hcrminer.Node(transItem, 1);
@@ -155,6 +207,12 @@ public class Hcrminer{
                 }
             }
         }
+        /*
+        //Print check for newEPlist
+        for(Node node: newEPlist){
+            System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
+        }
+        */
         return newEPlist;
     }
 
@@ -180,14 +238,50 @@ public class Hcrminer{
         }
     }
 
-    //EPlist pruning function for minsup
-    public static void supPruneEPlist(float minsup, ArrayList<Node> EPlist){
+    //EPlist and dB pruning function for minsup
+    public static void supPrune(float minsup, ArrayList<Node> epList, HashMap<String, ArrayList<String>> dB){
+      /*
+      //Print check before for EPlist
+      for(Node node: epList){
+          System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
+      }
+      */
+      /*
+      //Print check before for dB
+      for(String key: dB.keySet()){
+          String transID = key.toString();
+          ArrayList<String> transList = dB.get(key);
+          System.out.println(transID + " " + transList);
+      }
+      */
         int i;
-        for(i=0; i<EPlist.size(); i++){
-            if(EPlist.get(i).frequency < (int)minsup){
-                EPlist.remove(i);
-            }
+        int j;
+        for(i=0; i<epList.size(); i++){
+          if(epList.get(i).frequency < (int)minsup){
+              for(String key: dB.keySet()){
+                  if(dB.get(key).contains(epList.get(i).item)){
+                    j=dB.get(key).indexOf(epList.get(i).item);
+                    dB.get(key).remove(j);
+                  }
+              }
+              epList.remove(i);
+          }
         }
+        /*
+        //Print check after for EPlist
+        for(Node node: epList){
+            System.out.println("Item: " + node.item + " Frequency: " + node.frequency);
+        }
+        */
+        /*
+        //Print check before for dB
+        for(String key: dB.keySet()){
+            String transID = key.toString();
+            ArrayList<String> transList = dB.get(key);
+            System.out.println(transID + " " + transList);
+        }
+        */
+        return;
     }
 
     //Function to sort EPlist in increasing frequency
