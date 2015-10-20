@@ -35,6 +35,7 @@ public class Hcrminer{
 		float minconf = Float.parseFloat(args[1]);
 		String infile = args[2];
 		String outfile = args[3];
+    int option = Integer.parseInt(args[4]);
 
 
 		System.out.println("minsup: " + minsup + " minconf: " + minconf + " infile: " + infile + " outfile: " + outfile);
