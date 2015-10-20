@@ -104,19 +104,12 @@ public class Hcrminer{
 				// Only add itemIds to our set if its support is greater than the minsup
 				if (singleElements.get(itemId) >= minsup)
 					nulEP.add(itemId);
-
-
 			}
 			else
 				singleElements.put(itemId, 1);
-
 			}
-
-
 		return itemSet;
-
 	}
-
 
     //Function that recurses
 		public static String TP(String P, HashMap<String, ArrayList<String>> DB, float minsup, int count) {
@@ -211,15 +204,11 @@ public class Hcrminer{
 							PDBx.put(key, temp);
 						}
 					}
-					////System.out.println("PDB(x): " + PDBx);
-					// Recursive step
 
+				// Recursive step
 				}
 				if (! PDBx.isEmpty())
 				{
-					//System.out.println("value size: " + PDBx.get("3").size());
-					//System.out.println("DBPx: " + PDBx);
-					//System.out.println(P + " calling " + P+x);
 					TP(P+","+x, PDBx, minsup, local_hist.get(x));
 				}
 				else
@@ -229,10 +218,6 @@ public class Hcrminer{
 
 
 			}
-
-			////System.out.println("E(P): " + ep);
-			////System.out.println("DB(P): " + DB);
-			//System.out.println("Right before final return--P = " + P + ",   freqItemsets = " +freqItemsets);
 			return P;
 
 
